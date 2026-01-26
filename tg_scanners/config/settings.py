@@ -9,6 +9,7 @@ MESSAGE_SOURCE = os.getenv("MESSAGE_SOURCE", "mock")
 
 DB_DIALECT = os.getenv("DB_DIALECT", "mysql")
 DB_DRIVER = os.getenv("DB_DRIVER", "MySQL9.6")
+DRIVER_PATH = os.getenv("DRIVER_PATH", "")
 DB_HOST = os.getenv("DB_HOST", "127.0.0.1")
 DB_PORT = int(os.getenv("DB_PORT", 3306))
 DB_NAME = os.getenv("DB_NAME", "test1")
