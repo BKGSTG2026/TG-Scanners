@@ -4,8 +4,8 @@
 
 PREFIX_LEN=4
 TAG_STATUS_LEN=7
-EPC_LEN=25
-DAT_LEN=12
+EPC_LEN=19
+DAT_LEN=15
 
 # Format should follow the line directly below - data currently parsed is INVALID and just used as a POC
 # <prefix> [<tagstatus>] [<epclen>] [<epc>] [<datlen>] [<data>] <suffix> [CR/LF]
@@ -13,7 +13,7 @@ DAT_LEN=12
 # Running as-is with string like the below, parses into the following:
 # 400180004000290E34004E201914DB92C00000000000
 # <prefix> <tag_status> <epc>                       <dat>
-# <4001>   <8>          <0004000290E34004E201914DB> <92C000000000>
+# <4001>   <8>          <0004000290E34004E201914DB> <92C00000000000>
 
 def parse_message(raw_message: str) -> dict:
     """
