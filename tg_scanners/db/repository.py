@@ -6,6 +6,7 @@ from tg_scanners.config.settings import (
     DB_DIALECT,
     DB_DRIVER,
     DRIVER_PATH,
+    DB_MESSAGE_TABLE,
     DB_HOST,
     DB_PORT,
     DB_NAME,

@@ -1,10 +1,11 @@
 from sqlalchemy.orm import declarative_base
 from sqlalchemy import Column, Integer, String, DateTime, func
-
+from tg_scanners.config.settings import DB_MESSAGE_TABLE
 Base = declarative_base()
 
 class Message(Base):
-    __tablename__ = "messages"
+    # __tablename__ = "messages"
+    __tablename__ = DB_MESSAGE_TABLE
 
     id = Column(Integer, primary_key=True, autoincrement=True)
 
