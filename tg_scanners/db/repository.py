@@ -1,7 +1,12 @@
+"""
+Initialize the database session from the ORM and use that to write data to the table 
+"""
+
 from sqlalchemy.orm import sessionmaker
 from tg_scanners.db.engine import build_engine
 from tg_scanners.db.schema import ensure_schema
 from tg_scanners.db.models import Message
+from tg_scanners.parser.message_parser import parse_message
 from tg_scanners.config.settings import (
     DB_DIALECT,
     DB_DRIVER,
@@ -32,10 +37,13 @@ class MessageRepository:
 
         self.Session = sessionmaker(bind=self.engine)
 
-    def save(self, parsed_data: dict) -> None:
+    def save(self, message: str) -> None:
         session = self.Session()
         try:
-            print(f"Saving to DB: {parsed_data}")  # add this line
+            parsed_data = parse_message(message)
+
+            # Log out DB transaction to console
+            print(f"Saving to DB: {parsed_data}")
             session.add(Message(**parsed_data))
             session.commit()
         except Exception:

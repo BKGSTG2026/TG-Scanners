@@ -1,6 +1,9 @@
+"""
+Contains the logic for capturing TCP IP messages
+"""
+
 import socket
 from typing import Callable
-
 from .base import MessageSource
 
 
@@ -8,8 +11,11 @@ class TCPListener(MessageSource):
     def __init__(self, host: str, port: int):
         self.host = host
         self.port = port
+    
+    def start(self):
+        pass
 
-    def start(self, handler: Callable[[str], None]) -> None:
+    def listen(self):
         """
         Listen on a TCP socket and pass received messages to the handler.
         """
@@ -20,10 +26,7 @@ class TCPListener(MessageSource):
             print(f"Listening on {self.host}:{self.port}")
 
             while True:
-                conn, _ = server.accept()
-                with conn:
-                    data = conn.recv(4096)
-                    if not data:
-                        continue
-
-                    m
+                data = server.recv(1024)  # Receive data
+                if data:
+                    barcode = data.decode('utf-8').strip()
+                    print(f"Scanned barcode: {barcode}")

@@ -1,6 +1,7 @@
-# TODO 
-# Replace these global variables with the correct parsing logic
-#  for time being, just using arbitrary numbers
+"""
+Logic for parsing 'messages' either mock messages or 'real' ones. 
+This logic is not correct- just used for a POC
+"""
 
 PREFIX_LEN=4
 TAG_STATUS_LEN=7
@@ -19,9 +20,7 @@ def parse_message(raw_message: str) -> dict:
     """
     Minimal parser for testing end-to-end ingestion.
 
-    For now:
-    - Store the raw message as-is
-    - Compute its length
+    Just chose arbitrary ranges for values
     """
     if not isinstance(raw_message, str):
         raise ValueError("Expected raw_message to be a string")
@@ -36,5 +35,6 @@ def parse_message(raw_message: str) -> dict:
         "epc": cleaned[PREFIX_LEN+TAG_STATUS_LEN:PREFIX_LEN+TAG_STATUS_LEN+EPC_LEN],
         "dat": cleaned[PREFIX_LEN+TAG_STATUS_LEN+EPC_LEN:PREFIX_LEN+TAG_STATUS_LEN+EPC_LEN+DAT_LEN]
     }
-    print(f"Parsed message: {result}")  # add this line
+    # Debug message - TODO: Configure debug logging with optional flag
+    print(f"Parsed message: {result}")
     return result

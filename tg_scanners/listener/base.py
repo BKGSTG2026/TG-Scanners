@@ -1,3 +1,7 @@
+"""
+Abstract method that is used to either produce mock or real messages and send them to their approproate handler
+"""
+
 from abc import ABC, abstractmethod
 from typing import Callable
 

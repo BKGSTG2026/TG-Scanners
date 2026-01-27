@@ -1,3 +1,6 @@
+"""
+Creates table if __tablename__ specified in tg_scanners.db.models doesn't already exist
+"""
 from sqlalchemy.engine import Engine
 from tg_scanners.db.models import Base
 
