@@ -1,5 +1,5 @@
 # Byte-compiled / optimized / DLL files
-*__pycache__/
+__pycache__/
 *.py[cod]
 *$py.class
 
@@ -7,26 +7,65 @@
 *.so
 
 # Distribution / packaging
+.Python
 build/
+develop-eggs/
 dist/
-*.egg-info/
+downloads/
+eggs/
 .eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+*.egg-info/
+.installed.cfg
+*.egg
+MANIFEST
 
-# Virtual environments
+# Virtual environment
 venv/
 env/
 ENV/
-.venv/
 .env/
+
+# Installer logs
+pip-log.txt
+pip-delete-this-directory.txt
+
+# Unit test / coverage reports
+htmlcov/
+.tox/
+.nox/
+.coverage
+.coverage.*
+.cache
+nosetests.xml
+coverage.xml
+*.cover
+.hypothesis/
+.pytest_cache/
+
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# pyenv
+.python-version
 
 # IDE / editor files
 .vscode/
 .idea/
-*.swp
-*.swo
+*.sublime-workspace
+*.sublime-project
 
-# Logs and temp files
+# macOS
+.DS_Store
+
+# Linux
+*.swp
+*~
+
+# Logs / temp files
 *.log
 *.tmp
-*.bak
-

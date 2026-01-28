@@ -10,7 +10,6 @@ from tg_scanners.parser.message_parser import parse_message
 from tg_scanners.config.settings import (
     DB_DIALECT,
     DB_DRIVER,
-    DRIVER_PATH,
     DB_MESSAGE_TABLE,
     DB_HOST,
     DB_PORT,
@@ -24,7 +23,6 @@ class MessageRepository:
         self.engine = build_engine(
             dialect=DB_DIALECT,
             driver=DB_DRIVER,
-            driver_path=DRIVER_PATH,
             host=DB_HOST,
             port=DB_PORT,
             database=DB_NAME,

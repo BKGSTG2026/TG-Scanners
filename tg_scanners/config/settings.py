@@ -13,7 +13,6 @@ TCP_SCANNER_PORT = int(os.getenv("LISTEN_PORT", 7000))
 # MySQL Server connection settings
 DB_DIALECT = os.getenv("DB_DIALECT")
 DB_DRIVER = os.getenv("DB_DRIVER")
-DRIVER_PATH = os.getenv("DRIVER_PATH")
 DB_MESSAGE_TABLE = os.getenv("DB_MESSAGE_TABLE")
 DB_HOST = os.getenv("DB_HOST")
 DB_PORT = int(os.getenv("DB_PORT"))

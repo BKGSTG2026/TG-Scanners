@@ -8,7 +8,6 @@ from sqlalchemy import create_engine
 
 def build_engine(
     dialect: str,
-    driver_path: str,
     driver: str,
     host: str,
     port: int,
