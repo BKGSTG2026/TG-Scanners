@@ -15,5 +15,14 @@ On startup, the application automatically creates required database tables if th
 ## Pip dependencies (should all be in requirements.txt)
 1. pip install -r requirements.txt
 
-## MSSQL setup
-1. Install server and tools form here https://learn.microsoft.com/en-us/sql/linux/quickstart-install-connect-ubuntu?view=sql-server-ver17&tabs=ubuntu2004%2C2025ubuntu2204%2Codbc-ubuntu-1804
+## Setting up the Python Virtual Env (venv)
+1. (On a raspberry pi) Install  python3-venv & pip with `sudo apt install -y python3-venv python3-pip`
+2.  Setup `/opt` to run the application 
+    ```
+    $> sudo mkdir -p /opt/tg-scanners
+    $> cd /opt/tg-scanners
+    $> python3 -m venv venv
+    $> sudo chown -R <user>:<user> /opt/tg-scanners # USER should be non-root user needed to run the application
+    ```
+3. Hop into the venv with `source venv/bin/activate` - you should see your prompt change
+4. While still in the venv, install the pip dependencies as the service user `sudo -u <user> /opt/tg-scanners/venv/bin/pip install -r requirements.txt`
