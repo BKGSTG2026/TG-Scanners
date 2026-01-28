@@ -23,7 +23,7 @@ def build_engine(
         print(locals())
         # Build DSN string
         connection_string = (
-            f"mssql+pyodbc://{username}:{password_enc}@{host},{port}/{database}"
+            f"{dialect}+pyodbc://{username}:{password_enc}@{host},{port}/{database}"
             f"?driver={driver_enc}"
             f"&Encrypt=yes"
             f"&TrustServerCertificate=yes"
