@@ -14,3 +14,6 @@ On startup, the application automatically creates required database tables if th
 
 ## Pip dependencies (should all be in requirements.txt)
 1. pip install -r requirements.txt
+
+## MSSQL setup
+1. Install server and tools form here https://learn.microsoft.com/en-us/sql/linux/quickstart-install-connect-ubuntu?view=sql-server-ver17&tabs=ubuntu2004%2C2025ubuntu2204%2Codbc-ubuntu-1804

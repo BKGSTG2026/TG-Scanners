@@ -24,6 +24,5 @@ class Message(Base):
     # Add timestamp
     created_at = Column(
         DateTime(timezone=True),
-        nullable=False,
         server_default=func.now(),
     )

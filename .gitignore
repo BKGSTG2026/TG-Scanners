@@ -1,5 +1,5 @@
 # Byte-compiled / optimized / DLL files
-__pycache__/
+*__pycache__/
 *.py[cod]
 *$py.class
 
@@ -29,11 +29,4 @@ ENV/
 *.log
 *.tmp
 *.bak
-
-# Ignore everything else
-*
-
-# But keep Python source files
-!*.py
-!*/  # keep directories so that Python files inside are tracked
 
