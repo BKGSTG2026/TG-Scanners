@@ -25,7 +25,7 @@ case "$ID" in
 		;;
 	debian)
 		REPO_URL="https://packages.microsoft.com/debian/${VERSION_ID}/prod"
-		SUITE="$(VERSION_CODENAME)" # bookworm, trixie, etc
+		SUITE="$VERSION_CODENAME" # bookworm, trixie, etc
 		;;
 	*)
 		echo "Unsupported distribution: $ID"
