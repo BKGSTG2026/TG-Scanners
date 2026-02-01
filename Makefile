@@ -3,7 +3,7 @@
 # ----------------------------
 NAME        := tg-scanners
 VERSION     := 1.0.0
-ARCH        := amd64
+ARCH        ?= amd64
 DISTDIR     := dist
 USER        := tg-scanner
 GROUP       := tg-scanner

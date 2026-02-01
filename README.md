@@ -31,7 +31,7 @@ On startup, the application automatically creates required database tables if th
 This repo contains an `makefile` which turns this python code into a `.deb` file that can be installed on any debain-based system. 
 - `make clean`: Cleans out the `/dist` folder - should be done before running the packaging command
 - `make package`: Creates the `.deb` file that can be used to install the python code, create the required users and installs the service file in the correct location
-
+	- NOTE: If you are building this on a pi, you MUSt update the architechture to use 'arm64 by doing `make package ARCH=arm64``
 
 ## Build / Packaging dependencies
 1. `sudo apt install -y ruby ruby-dev build-essential`
