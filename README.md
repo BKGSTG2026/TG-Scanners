@@ -26,3 +26,22 @@ On startup, the application automatically creates required database tables if th
     ```
 3. Hop into the venv with `source venv/bin/activate` - you should see your prompt change
 4. While still in the venv, install the pip dependencies as the service user `sudo -u <user> /opt/tg-scanners/venv/bin/pip install -r requirements.txt`
+
+## Packaging
+This repo contains an `makefile` which turns this python code into a `.deb` file that can be installed on any debain-based system. 
+- `make clean`: Cleans out the `/dist` folder - should be done before running the packaging command
+- `make package`: Creates the `.deb` file that can be used to install the python code, create the required users and installs the service file in the correct location
+
+
+## Build / Packaging dependencies
+1. `sudo apt install -y ruby ruby-dev build-essential`
+2. `sudo gem install --no-document fpm`
+## Rapsberry Pi Setup
+
+### QOL Things
+1. Updates aliases for root
+
+### Packages Installed
+1. vim
+
+
