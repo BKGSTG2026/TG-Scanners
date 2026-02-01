@@ -11,13 +11,13 @@ User=tg-scanner
 Group=tg-scanner
 
 # There the code is cloned
-WorkingDirectory=/opt/tg-scanners
+WorkingDirectory=/var/opt/tg-scanners
 
 # Env file saved here
 EnvironmentFile=/etc/tg-scanners/tg-scanners.env
 
 # Use the venv Python explicitly
-ExecStart=/opt/tg-scanners/venv/bin/python -m tg_scanners.main --mode mock
+ExecStart=/var/opt/tg-scanners/venv/bin/python -m tg_scanners.main --mode mock
 
 # Environment (optional but recommended)
 Environment=PYTHONUNBUFFERED=1

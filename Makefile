@@ -3,10 +3,10 @@
 # ----------------------------
 NAME        := tg-scanners
 VERSION     := 1.0.0
-ARCH        := arm64
+ARCH        := amd64
 DISTDIR     := dist
-USER        := tgscanners
-GROUP       := tgscanners
+USER        := tg-scanner
+GROUP       := tg-scanner
 FPM         := fpm
 
 # ----------------------------
@@ -34,11 +34,11 @@ package:
 	@echo "Creating source tarball..."
 	mkdir -p $(DISTDIR)
 	tar \
-		-czf $(DISTDIR)/$(NAME).tar.gz \
+		-C . -czf $(DISTDIR)/$(NAME).tar.gz \
 		$(EXCLUDES) \
-		--transform 's|^\./|$(NAME)/|' \
 		.
-	@echo "ARCH='$(ARCH)'"	
+
+	@echo "Building for architecture: '$(ARCH)'"	
 	@echo "Building .deb package..."
 	$(FPM) -s tar -t deb \
 		-n $(NAME) \
