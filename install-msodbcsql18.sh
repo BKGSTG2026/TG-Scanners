@@ -48,7 +48,8 @@ echo "deb [arch=$ARCH signed-by=$KEYRING] $REPO_URL $SUITE main" | sudo tee "$RE
 
 # Update apt and install packages
 echo "Updating apt and installing MS ODBC driver..."
-sudo apt update
+# Have to do the allow authenticated ebcause mfst hasn't released a key for ARM on trixie yet
+sudo apt update --allow-unauthenticated
 sudo ACCEPT_EULA=Y apt install -y msodbcsql18 unixodbc-dev
 
 echo "msodbcsql18 installed successfully"
