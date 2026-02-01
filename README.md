@@ -45,3 +45,9 @@ This repo contains an `makefile` which turns this python code into a `.deb` file
 1. vim
 
 
+### Setup
+1. Clone the git repo
+2. Run `make package`
+	- If there is an error saying that you need to install fpm, then you need to install it along with ruby by `sudo apy install ruby; sudo gem install fpm. Then try the `make package` command again. If you see the message "DEB package created sueccessfully", and there is a file located in the local `dist` folder` thed the command executed successfully.
+3. Install the package with `sudo dpkg -i dist/tg-scanners_1.0.0_arm64.deb` (NOTE: the architechture may change based on where you are installing it - on a raspberry pi, it should have the 'arm' architechture'). If you are prompted to install a dependency. install it
+
