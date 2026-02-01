@@ -1,6 +1,13 @@
 #!/bin/sh
 set -e
 
+# Bail if the msodbc driver isn't installed
+if ! dpkg -s msodbcsql18 >/dev/null 2>&1; then
+	echo "ERROR: msodbcsql18 is required"
+	echo "Run: sudo /var/opt/tg-scanners/install-msodbcsql18.sh"
+	exit 1
+fi
+
 # Create group and user if missing
 getent group tg-scanner >/dev/null || groupadd --system tg-scanner
 getent passwd tg-scanner >/dev/null || \
