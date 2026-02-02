@@ -9,8 +9,9 @@ USER        := tg-scanner
 GROUP       := tg-scanner
 FPM         := fpm
 
-TARBALL := $(DISTDIR)/$(NAME).tar.gz
-DEB     := $(DISTDIR)/$(NAME)_$(VERSION)_$(ARCH).deb
+PACKAGE_FILE := $(DISTDIR)/$(NAME)_$(VERSION)_$(ARCH).deb
+SRC          := .
+TARBALL      := $(DISTDIR)/$(NAME).tar.gz
 
 # ----------------------------
 # Files to exclude from tarball
@@ -33,32 +34,29 @@ EXCLUDES := \
 DEPS := \
 	-d python3 \
 	-d python3-venv \
-	-d python3-pip \
-	-d unixodbc 
+	-d unixodbc \
+	-d unixodbc-dev \
+	-d freetds-bin \
+	-d freetds-dev \
+	-d tdsodbc 
 
 # ----------------------------
 # Main packaging target
 # ----------------------------
-.PHONY: package clean
+.PHONY: clean package
 
-package: $(DEB)
-
-$(DISTDIR):
-	mkdir -p $(DISTDIR)
-
-
-$(TARBALL): | $(DISTDIR)
+package: clean
 	@command -v fpm >/dev/null || (echo "fpm not found; install with 'sudo gem install fpm'" && exit 1)
 	@echo "Creating source tarball..."
 	mkdir -p $(DISTDIR)
-	tar \
-		-C . -czf $(TARBALL) \
+	@tar -C $(SRC) -czf $(TARBALL) \
 		$(EXCLUDES) \
-		.
+		$(SRC)
 
-$(DEB): $(TARBALL)
 	@echo "Building .dev package for architecture: '$(ARCH)'"
-	$(FPM) -s tar -t deb \
+
+	fpm -s tar -t deb \
+		-p $(PACKAGE_FILE) \
 		-n $(NAME) \
 		-v $(VERSION) \
 		--architecture $(ARCH) \
@@ -66,7 +64,6 @@ $(DEB): $(TARBALL)
 		--deb-systemd $(NAME).service \
 		--after-install post-install.sh \
 		$(DEPS) \
-		-p $(DEB) \
 		$(TARBALL)
 
 	@echo "DEB package created in $(DISTDIR)/"
@@ -74,6 +71,9 @@ $(DEB): $(TARBALL)
 # ----------------------------
 # Clean build artifacts
 # ----------------------------
+.PHONY: clean
+
 clean:
+	@echo "Cleaning dist directory"
 	rm -rf $(DISTDIR)
 
