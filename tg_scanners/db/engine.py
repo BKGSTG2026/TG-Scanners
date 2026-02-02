@@ -22,16 +22,21 @@ def build_engine(
         driver_enc = urllib.parse.quote_plus(driver)
         print(locals())
         # Build DSN string
+        # connection_string = (
+        #     f"{dialect}+pyodbc://{username}:{password_enc}@{host},{port}/{database}"
+        #     f"?driver={driver_enc}"
+        #     f"&Encrypt=yes"
+        #     f"&TrustServerCertificate=yes"
+        # )
+        
         connection_string = (
-            f"{dialect}+pyodbc://{username}:{password_enc}@{host},{port}/{database}"
-            f"?driver={driver_enc}"
-            f"&Encrypt=yes"
-            f"&TrustServerCertificate=yes"
-        )
+        f"mssql+pymssql://{username}:{password_enc}"
+        f"@{host}:{port}/{database}"
+    )
         print(connection_string)
         return create_engine(
             connection_string,
-            fast_executemany=True,       # improves bulk inserts
+            # fast_executemany=True,       # improves bulk inserts
             pool_size=10,                # max concurrent connections
             max_overflow=5,              # extra connections beyond pool
             pool_pre_ping=True,          # detect stale connections

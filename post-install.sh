@@ -30,17 +30,17 @@ deactivate
 ARCH=$(dpkg --print-architecture)
 
 # Install ODBC drivers
-if [ "$ARCH" = "amd64" ]; then
-    # Install Microsoft ODBC driver for laptops / servers
-    curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | sudo tee /usr/share/keyrings/microsoft-prod.gpg > /dev/null
-    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-prod.gpg] https://packages.microsoft.com/ubuntu/22.04/prod jammy main" | sudo tee /etc/apt/sources.list.d/microsoft-prod.list
-    sudo apt update
-    sudo ACCEPT_EULA=Y apt install -y msodbcsql18 unixodbc-dev
+#if [ "$ARCH" = "amd64" ]; then
+#    # Install Microsoft ODBC driver for laptops / servers
+#    curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | sudo tee /usr/share/keyrings/microsoft-prod.gpg > /dev/null
+#    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-prod.gpg] https://packages.microsoft.com/ubuntu/22.04/prod jammy main" | sudo tee /etc/apt/sources.list.d/microsoft-prod.list
+#    sudo apt update
+#    sudo ACCEPT_EULA=Y apt install -y msodbcsql18 unixodbc-dev
 #else
     # ARM / Raspberry Pi: install FreeTDS
     #sudo apt update
     #sudo apt install -y unixodbc unixodbc-dev freetds-bin freetds-dev tdsodbc
-fi
+#fi
 
 # Configure DSN (testing)
 sudo mkdir -p /etc/odbcinst.ini.d
