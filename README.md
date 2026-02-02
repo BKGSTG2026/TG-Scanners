@@ -1,53 +1,327 @@
-On startup, the application automatically creates required database tables if they do not exist.
+# TG-Scanners
 
-## Running locally
-1. Ensure dependencies are installed
-2. Ensure mysql driver & mysql server are installed correctly
-3. Ensure db credentials are correct for connecting to local mysqldb (by updating .env file) 
-4. Run with `python3 -m tg_scanners.main --mode mock` from application root to run te service persistently and continuously send mock data. You can also run with `python3 -m tg_scanners.main --mode server` to connect to a TCP/Ip scanner instead. If running with the `--mode mock` argument, you should be able to connect to the table suing DBeaver and see the data streamed in.
+TG-Scanners is a Python-based scanning service designed to run reliably on Linux systems (including Raspberry Pi) and connect to a Microsoft SQL Server database using ODBC. It is distributed as a Debian (`.deb`) package and is intended to run as a long-lived `systemd` service.
 
-## APT dependencies (non-pip)
-1. python3-pip
-2. mysql-server (I am using linux-mint)
-3. dbeaver-ce (FOSS db client gui). Use to validate data is being sent correctly to db
-4. Setup local db, by creating test db and giving my test user all access `GRANT ALL PRIVILEGES ON test1.* TO 'test'@'localhost';`
+This document explains **what the project does**, **how it is installed**, **how it is configured**, and **how it is operated and troubleshot**.
 
-## Pip dependencies (should all be in requirements.txt)
-1. pip install -r requirements.txt
+---
 
-## Setting up the Python Virtual Env (venv)
-1. (On a raspberry pi) Install  python3-venv & pip with `sudo apt install -y python3-venv python3-pip`
-2.  Setup `/opt` to run the application 
-    ```
-    $> sudo mkdir -p /opt/tg-scanners
-    $> cd /opt/tg-scanners
-    $> python3 -m venv venv
-    $> sudo chown -R <user>:<user> /opt/tg-scanners # USER should be non-root user needed to run the application
-    ```
-3. Hop into the venv with `source venv/bin/activate` - you should see your prompt change
-4. While still in the venv, install the pip dependencies as the service user `sudo -u <user> /opt/tg-scanners/venv/bin/pip install -r requirements.txt`
+## High-Level Architecture
 
-## Packaging
-This repo contains an `makefile` which turns this python code into a `.deb` file that can be installed on any debain-based system. 
-- `make clean`: Cleans out the `/dist` folder - should be done before running the packaging command
-- `make package`: Creates the `.deb` file that can be used to install the python code, create the required users and installs the service file in the correct location
-	- NOTE: If you are building this on a pi, you MUSt update the architechture to use 'arm64 by doing `make package ARCH=arm64``
+* **Language:** Python 3
+* **Runtime model:** systemd-managed service
+* **Packaging:** `.deb` built with `fpm`
+* **Database connectivity:** ODBC (FreeTDS / unixODBC) to Microsoft SQL Server
+* **Virtual environment:** Dedicated Python `venv` under `/var/opt/tg-scanners`
+* **Configuration:** Environment file in `/etc/tg_scanners/tg-scanners.env`
 
-## Build / Packaging dependencies
-1. `sudo apt install -y ruby ruby-dev build-essential`
-2. `sudo gem install --no-document fpm`
-## Rapsberry Pi Setup
+The service runs as a background daemon and is designed to start automatically on boot.
 
-### QOL Things
-1. Updates aliases for root
+---
 
-### Packages Installed
-1. vim
+## System Requirements
 
+### Operating System
 
-### Setup
-1. Clone the git repo
-2. Run `make package`
-	- If there is an error saying that you need to install fpm, then you need to install it along with ruby by `sudo apy install ruby; sudo gem install fpm. Then try the `make package` command again. If you see the message "DEB package created sueccessfully", and there is a file located in the local `dist` folder` thed the command executed successfully.
-3. Install the package with `sudo apt install ./dist/tg-scanners_1.0.0_arm64.deb` (NOTE: the architechture may change based on where you are installing it - on a raspberry pi, it should have the 'arm' architechture'). If you are prompted to install a dependency. install it
+* Debian-based Linux distribution
+
+  * Raspberry Pi OS (64-bit recommended)
+  * Ubuntu / Debian
+
+* The python code should still work on Windows, it will just need some ajustments in engine.py
+
+### Hardware
+
+* Raspberry Pi (ARM64) or amd64 Linux host
+* Network connectivity to the SQL Server
+
+### Required Packages (handled automatically by the `.deb`)
+
+* `python3`
+* `python3-venv`
+* `unixodbc`
+* `unixodbc-dev`
+* `freetds-bin`
+* `freetds-dev`
+* `tdsodbc`
+
+You **do not** need to install these manually if you install via the installer.
+
+---
+
+## Installation
+
+### 0. Build the `.deb` Package
+From the root of the project, you will create the .deb (the installer) that is used to install the python code and configure it to run as a system service. 
+
+From the project root, run:
+
+```bash
+make package
+```
+
+This should generate a `.deb` pacakge in the project's dist folder. You will use that file in the following steps. If you do not have the ability to 'make' the file, make sure make is installed by doing `sudo apt install make`
+
+### 1. Install the `.deb` Package
+
+From the project root (or wherever the package is located):
+
+```bash
+sudo apt install ./dist/tg-scanners_<version>_<arch>.deb
+```
+
+Example:
+
+```bash
+sudo apt install ./dist/tg-scanners_1.0.0_arm64.deb
+```
+
+Using `apt` (instead of `dpkg`) ensures all dependencies are automatically installed.
+
+---
+
+## What the Installer Does
+
+During installation, the package performs the following actions:
+
+1. Installs system dependencies via APT
+2. Deploys application files to:
+
+   ```
+   /var/opt/tg-scanners
+   ```
+3. Creates a Python virtual environment:
+
+   ```
+   /var/opt/tg-scanners/venv
+   ```
+4. Installs Python dependencies from `requirements.txt`
+5. Deploys the systemd service unit:
+
+   ```
+   /etc/systemd/system/tg-scanners.service
+   ```
+6. Creates the configuration directory:
+
+   ```
+   /etc/tg_scanners
+   ```
+7. Enables the service to start on boot
+
+All of this logic lives in the package `post-install.sh` script.
+
+---
+
+## Configuration
+
+### Environment File
+
+TG-Scanners is configured via an environment file:
+
+```bash
+/etc/tg_scanners/tg-scanners.env
+```
+
+This file is **not overwritten on upgrades** and is intended for local, host-specific configuration.
+
+Example:
+
+```env
+DB_HOST=sqlserver.example.com
+DB_PORT=1433
+DB_NAME=tg_scanners
+DB_USER=scanner_user
+DB_PASSWORD=supersecret
+ODBC_DRIVER=FreeTDS
+LOG_LEVEL=INFO
+```
+
+After editing this file, reload and restart the service
+
+```bash
+sudo systemctl daemon-reexec
+sudo systemctl restart tg-scanners
+```
+
+---
+
+## FreeTDS / ODBC Configuration
+
+The service relies on FreeTDS for SQL Server connectivity.
+
+### FreeTDS Configuration File
+
+Installed or managed at:
+
+```bash
+/etc/freetds/freetds.conf
+```
+
+Ensure the contents of this local `freedts.conf` file are added to your system's `/etc/freetds/freetds.conf`
+```
+
+### ODBC Driver Registration
+
+Ensure `tdsodbc` is registered in:
+
+```bash
+/etc/odbcinst.ini
+```
+
+Example:
+
+```ini
+[FreeTDS]
+Description=FreeTDS ODBC Driver
+Driver=/usr/lib/aarch64-linux-gnu/odbc/libtdsodbc.so
+Setup=/usr/lib/aarch64-linux-gnu/odbc/libtdsS.so
+```
+
+---
+
+## Service Management
+
+### Service Name
+
+```
+tg-scanners.service
+```
+
+### Common Commands
+
+Start the service:
+
+```bash
+sudo systemctl start tg-scanners
+```
+
+Stop the service:
+
+```bash
+sudo systemctl stop tg-scanners
+```
+
+Restart the service:
+
+```bash
+sudo systemctl restart tg-scanners
+```
+
+Check status:
+
+```bash
+sudo systemctl status tg-scanners
+```
+
+Enable on boot (this is done in the post-install script):
+
+```bash
+sudo systemctl enable tg-scanners
+```
+
+---
+
+## Logs and Debugging
+
+### systemd Logs
+
+View logs:
+
+```bash
+journalctl -fu tg-scanners #view live logs
+```
+
+```bash
+journalctl -eu tg-scanners #view all logs
+```
+
+### Common Issues
+
+#### Service won’t start
+
+* Check environment file syntax
+* Verify database connectivity
+* Ensure ODBC driver is installed
+
+#### ODBC connection errors
+
+* Confirm `freetds.conf` entries
+* Validate driver path in `odbcinst.ini`
+* Test with:
+
+  ```bash
+  tsql -H <host> -p 1433 -U <user>
+  ```
+
+---
+
+## File Layout
+
+```
+# Code and python venv files
+/var/opt/tg-scanners/
+├── tg_scanners/
+│   └── (python source)
+├── venv/
+│   └── bin/python
+├── requirements.txt
+
+# Environment variables
+/etc/tg_scanners/
+└── tg-scanners.env
+
+# Systemd unit file
+/etc/systemd/system/
+└── tg-scanners.service
+```
+
+---
+
+## Upgrades
+
+To upgrade:
+
+(TBD) But will probably be something like the following:
+
+```bash
+sudo apt install ./dist/tg-scanners_<newversion>_<arch>.deb
+```
+
+* Configuration files in `/etc/tg_scanners` are preserved
+* The virtual environment may be updated if requirements change
+
+---
+
+## Uninstallation
+
+```bash
+sudo apt remove tg-scanners
+```
+
+Optional cleanup:
+
+```bash
+sudo rm -rf /var/opt/tg-scanners
+sudo rm -rf /etc/tg_scanners
+```
+
+---
+
+## Development Notes
+
+* Packaging is handled via `Makefile` + `fpm`
+* Dependencies are expressed as Debian package dependencies
+* Python dependencies are installed at post-install time via the post-install.sh script
+
+---
+
+## Support
+
+For issues:
+
+* Check `journalctl` (as root) via `journalctl -eu tg-scanners` or `journalctl -fu tg-scanners` for live updates
+* Validate ODBC connectivity independently
+* Verify environment configuration
+
+---
 
