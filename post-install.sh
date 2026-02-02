@@ -31,10 +31,10 @@ if [ "$ARCH" = "amd64" ]; then
     echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-prod.gpg] https://packages.microsoft.com/debian/13/prod trixie main" | sudo tee /etc/apt/sources.list.d/microsoft-prod.list
     sudo apt update
     sudo ACCEPT_EULA=Y apt install -y msodbcsql18 unixodbc-dev
-else
+#else
     # ARM / Raspberry Pi: install FreeTDS
-    sudo apt update
-    sudo apt install -y unixodbc unixodbc-dev freetds-bin freetds-dev tdsodbc
+    #sudo apt update
+    #sudo apt install -y unixodbc unixodbc-dev freetds-bin freetds-dev tdsodbc
 fi
 
 # Configure DSN (example)
