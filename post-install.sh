@@ -50,13 +50,15 @@ EOF
 sudo chown -R $NAME:$NAME /var/opt/$NAME
 sudo mkdir -p /etc/$NAME
 if [ ! -f "$ENV_FILE" ]; then
-    sudo cp /var/opt/$NAME/.env /etc/$NAME
+    sudo cp /var/opt/$NAME/.env /etc/$NAME/$NAME.env
     sudo chown $NAME:$NAME $ENV_FILE
 fi
 
 # Deploy systemd service files
 cp $SERVICE_FILE_SRC /etc/systemd/system
 chmod 640 /etc/systemd/system
+systemctl daemon-reload
+systemctl enable ${NAME}.service --now
 
 echo "Post-install complete!"
 
