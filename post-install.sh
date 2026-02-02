@@ -17,7 +17,7 @@ if [ ! -d "$VENV_DIR" ]; then
 fi
 
 # Activate venv and install dependencies
-source $VENV_DIR/bin/activate
+. $VENV_DIR/bin/activate
 pip install --upgrade pip setuptools wheel
 pip install pyodbc
 
