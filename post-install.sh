@@ -4,6 +4,7 @@ set -euo pipefail
 NAME=tg-scanners
 VENV_DIR=/var/opt/$NAME/venv
 ENV_FILE=/etc/$NAME/$NAME.env
+SERVICE_FILE_SRC=/ver/opt/$NAME.service
 PYTHON_BIN=python3
 
 # Create system user if it doesn't exist
@@ -37,7 +38,7 @@ if [ "$ARCH" = "amd64" ]; then
     #sudo apt install -y unixodbc unixodbc-dev freetds-bin freetds-dev tdsodbc
 fi
 
-# Configure DSN (example)
+# Configure DSN (testing)
 sudo mkdir -p /etc/odbcinst.ini.d
 cat <<EOF | sudo tee /etc/odbcinst.ini
 [$NAME]
@@ -49,9 +50,13 @@ EOF
 sudo chown -R $NAME:$NAME /var/opt/$NAME
 sudo mkdir -p /etc/$NAME
 if [ ! -f "$ENV_FILE" ]; then
-    sudo cp /var/opt/.env /etc/$NAME
+    sudo cp /var/opt/$NAME/.env /etc/$NAME
     sudo chown $NAME:$NAME $ENV_FILE
 fi
+
+# Deploy systemd service files
+cp $SERVICE_FILE_SRC /etc/systemd/system
+chmod 640 /etc/systemd/system
 
 echo "Post-install complete!"
 
