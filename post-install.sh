@@ -1,42 +1,57 @@
-#!/bin/sh
-set -e
+#!/bin/bash
+set -euo pipefail
 
-# Bail if the msodbc driver isn't installed
-if ! dpkg -s msodbcsql18 >/dev/null 2>&1; then
-	echo "ERROR: msodbcsql18 is required"
-	echo "Run: sudo /var/opt/tg-scanners/install-msodbcsql18.sh"
-	exit 1
+NAME=tg-scanners
+VENV_DIR=/var/opt/$NAME/venv
+ENV_FILE=/etc/$NAME/$NAME.env
+PYTHON_BIN=python3
+
+# Create system user if it doesn't exist
+if ! id -u $NAME >/dev/null 2>&1; then
+    useradd --system --home /var/opt/$NAME --shell /usr/sbin/nologin $NAME
 fi
 
-# Create group and user if missing
-getent group tg-scanner >/dev/null || groupadd --system tg-scanner
-getent passwd tg-scanner >/dev/null || \
-    useradd --system --gid tg-scanner --home-dir /var/opt/tg-scanners \
-    --shell /sbin/nologin --comment "TG Scanners service account" tg-scanner
-
-# Fix ownership of the Python code
-chown -R tg-scanner:tg-scanner /var/opt/tg-scanners
-
-# Create Python venv if missing
-if [ ! -d /var/opt/tg-scanners/venv ]; then
-    sudo -u tg-scanner python3 -m venv /var/opt/tg-scanners/venv
+# Create venv
+if [ ! -d "$VENV_DIR" ]; then
+    $PYTHON_BIN -m venv $VENV_DIR
 fi
 
-# Install dependencies if requirements.txt exists
-if [ -f /var/opt/tg-scanners/requirements.txt ]; then
-    sudo -u tg-scanner /var/opt/tg-scanners/venv/bin/pip install -r /var/opt/tg-scanners/requirements.txt
+# Activate venv and install dependencies
+source $VENV_DIR/bin/activate
+pip install --upgrade pip setuptools wheel
+pip install pyodbc
+
+# Detect architecture
+ARCH=$(dpkg --print-architecture)
+
+# Install ODBC drivers
+if [ "$ARCH" = "amd64" ]; then
+    # Install Microsoft ODBC driver for laptops / servers
+    curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | sudo tee /usr/share/keyrings/microsoft-prod.gpg > /dev/null
+    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-prod.gpg] https://packages.microsoft.com/debian/13/prod trixie main" | sudo tee /etc/apt/sources.list.d/microsoft-prod.list
+    sudo apt update
+    sudo ACCEPT_EULA=Y apt install -y msodbcsql18 unixodbc-dev
+else
+    # ARM / Raspberry Pi: install FreeTDS
+    sudo apt update
+    sudo apt install -y unixodbc unixodbc-dev freetds-bin freetds-dev tdsodbc
 fi
 
-# Ensure /etc/tg-scanners exists
-mkdir -p /etc/tg-scanners
-# Deploy default env file if not already present
-if [ ! -f /etc/tg-scanners/tg-scanners.env ]; then
-    cp tg-scanners.env /etc/tg-scanners/tg-scanners.env
-    chown root:root /etc/tg-scanners/tg-scanners.env
-    chmod 640 /etc/tg-scanners/tg-scanners.env
+# Configure DSN (example)
+sudo mkdir -p /etc/odbcinst.ini.d
+cat <<EOF | sudo tee /etc/odbcinst.ini
+[$NAME]
+Description = ODBC driver for $NAME
+Driver = $(if [ "$ARCH" = "amd64" ]; then echo "/opt/microsoft/msodbcsql18/lib64/libmsodbcsql-18.1.so.1.1"; else echo "/usr/lib/arm-linux-gnueabihf/odbc/libtdsodbc.so"; fi)
+EOF
+
+# Set permissions
+sudo chown -R $NAME:$NAME /var/opt/$NAME
+sudo mkdir -p /etc/$NAME
+if [ ! -f "$ENV_FILE" ]; then
+    echo "CONFIG=example" | sudo tee $ENV_FILE
+    sudo chown $NAME:$NAME $ENV_FILE
 fi
 
-# Reload systemd and enable the service
-systemctl daemon-reload
-systemctl enable tg-scanners.service
+echo "Post-install complete!"
 
