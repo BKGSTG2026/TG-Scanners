@@ -49,7 +49,7 @@ EOF
 sudo chown -R $NAME:$NAME /var/opt/$NAME
 sudo mkdir -p /etc/$NAME
 if [ ! -f "$ENV_FILE" ]; then
-    sudo cp /var/opt/$NAME/.env /etc/$NAME
+    sudo cp /var/opt/.env /etc/$NAME
     sudo chown $NAME:$NAME $ENV_FILE
 fi
 
