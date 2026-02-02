@@ -28,7 +28,7 @@ ARCH=$(dpkg --print-architecture)
 if [ "$ARCH" = "amd64" ]; then
     # Install Microsoft ODBC driver for laptops / servers
     curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | sudo tee /usr/share/keyrings/microsoft-prod.gpg > /dev/null
-    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-prod.gpg] https://packages.microsoft.com/debian/13/prod trixie main" | sudo tee /etc/apt/sources.list.d/microsoft-prod.list
+    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-prod.gpg] https://packages.microsoft.com/ubuntu/22.04/prod jammy main" | sudo tee /etc/apt/sources.list.d/microsoft-prod.list
     sudo apt update
     sudo ACCEPT_EULA=Y apt install -y msodbcsql18 unixodbc-dev
 #else
@@ -49,7 +49,7 @@ EOF
 sudo chown -R $NAME:$NAME /var/opt/$NAME
 sudo mkdir -p /etc/$NAME
 if [ ! -f "$ENV_FILE" ]; then
-    echo "CONFIG=example" | sudo tee $ENV_FILE
+    sudo cp /var/opt/$NAME/.env /etc/$NAME
     sudo chown $NAME:$NAME $ENV_FILE
 fi
 
