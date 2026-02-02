@@ -2,25 +2,29 @@
 set -euo pipefail
 
 NAME=tg-scanners
+SERVICE_USR=tg-scanner
 VENV_DIR=/var/opt/$NAME/venv
 ENV_FILE=/etc/$NAME/$NAME.env
-SERVICE_FILE_SRC=/ver/opt/$NAME.service
+SERVICE_FILE_SRC=/var/opt/$NAME/$NAME.service
 PYTHON_BIN=python3
 
 # Create system user if it doesn't exist
-if ! id -u $NAME >/dev/null 2>&1; then
-    useradd --system --home /var/opt/$NAME --shell /usr/sbin/nologin $NAME
+if ! id -u $SERVICE_USR >/dev/null 2>&1; then
+    useradd --system --home /var/opt/$SERVICE_USR --shell /usr/sbin/nologin $SERVICE_USR
 fi
 
 # Create venv
 if [ ! -d "$VENV_DIR" ]; then
     $PYTHON_BIN -m venv $VENV_DIR
+    
 fi
 
 # Activate venv and install dependencies
 . $VENV_DIR/bin/activate
 pip install --upgrade pip setuptools wheel
+pip install  -r /var/opt/$NAME/requirements.txt
 pip install pyodbc
+deactivate
 
 # Detect architecture
 ARCH=$(dpkg --print-architecture)
@@ -47,11 +51,11 @@ Driver = $(if [ "$ARCH" = "amd64" ]; then echo "/opt/microsoft/msodbcsql18/lib64
 EOF
 
 # Set permissions
-sudo chown -R $NAME:$NAME /var/opt/$NAME
+sudo chown -R $SERVICE_USR:$SERVICE_USR /var/opt/$NAME
 sudo mkdir -p /etc/$NAME
 if [ ! -f "$ENV_FILE" ]; then
     sudo cp /var/opt/$NAME/.env /etc/$NAME/$NAME.env
-    sudo chown $NAME:$NAME $ENV_FILE
+    sudo chown $SERVICE_USR:$SERVICE_USR $ENV_FILE
 fi
 
 # Deploy systemd service files
