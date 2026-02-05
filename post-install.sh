@@ -1,5 +1,5 @@
 #!/bin/bash
-set -euo pipefail
+#set -euo pipefail
 
 NAME=tg-scanners
 SERVICE_USR=tg-scanner
