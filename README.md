@@ -60,7 +60,7 @@ From the project root, run:
 make package
 ```
 
-This should generate a `.deb` pacakge in the project's dist folder. You will use that file in the following steps. If you do not have the ability to 'make' the file, make sure make is installed by doing `sudo apt install make`
+This should generate a `.deb` pacakge in the project's dist folder. You will use that file in the following steps. If you do not have the ability to 'make' the file, make sure make is installed by doing `sudo apt install make`. If the installer says that other files are needed for the build, you should install those as well (ruby and a 'gem' install of fpm)
 
 ### 1. Install the `.deb` Package
 
