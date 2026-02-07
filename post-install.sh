@@ -154,7 +154,19 @@ systemctl daemon-reload
 systemctl enable ${APP_NAME}.service --now
 systemctl enable telegraf --now
 
-echo "Post-install complete!"
+echo "\nPost-install complete!"
 
+# -----------------------------
+# Checking service status
+# -----------------------------
 echo "Status of service '$APP_NAME' (python server): $(systemctl is-active $APP_NAME)"
+if ! systemctl -q is-active $APP_NAME; then
+    echo "ERROR: $APP_NAME is not started - use 'journalctl -eu $APP_NAME' to troubleshoot \
+    and try restarting the service with 'sudo systemctl restart $APP_NAME" 
+fi
+
 echo "Status of service 'telegraf' (scanner listener): $(systemctl is-active telegraf)"
+if ! systemctl -q is-active telegraf; then
+    echo "ERROR: telegraf is not started - use 'journalctl -eu $APP_NAME' to troubleshoot \
+    and try restarting the service with 'sudo systemctl restart telegraf" 
+fi
