@@ -16,6 +16,7 @@ VENV_DIR=/var/opt/$APP_NAME/venv
 # File that systemd uses for environment values for the python server and telegraf
 PYTHON_SERVER_ENV_FILE=/etc/$APP_NAME/$APP_NAME.env
 TELEGRAF_ENV_FILE=/etc/telegraf/telegraf.conf
+FREETDS_ENV_FILE=/etc/freetds/freedts.conf
 
 # Where the .deb installer puts the python server's systemd unit file
 SERVICE_FILE_SRC=/var/opt/$APP_NAME/$APP_NAME.service
@@ -23,6 +24,7 @@ SERVICE_FILE_SRC=/var/opt/$APP_NAME/$APP_NAME.service
 # Where the .deb installer puts the env/configration files
 PYTHON_SERVER_ENV_FILE_SRC=/var/opt/$APP_NAME/.env
 TELEGRAF_ENV_FILE_SRC=/var/opt/$APP_NAME/telegraf.conf
+FREETDS_ENV_FILE_SRC=/var/opt/$APP_NAME/freetds.conf
 PYTHON_BIN=python3
 
 # System architecture
@@ -96,6 +98,12 @@ if [ ! -f "$PYTHON_SERVER_ENV_FILE" ]; then
     sudo chown $SERVICE_USER:$SERVICE_USER $ENV_FILE
 fi
 
+# If the freetds config doesn't exist yet, add it
+if grep -q "sqlserver" $FREETDS_ENV_FILE; then
+    echo "No freetds config found, adding this local config"
+    cat $FREETDS_ENV_FILE_SRC >> $FREETDS_ENV_FILE
+fi
+
 # add in telegraf config
 cp $TELEGRAF_ENV_FILE_SRC $TELEGRAF_ENV_FILE
 
@@ -107,7 +115,6 @@ cp $TELEGRAF_ENV_FILE_SRC $TELEGRAF_ENV_FILE
 # Create venv
 if [ ! -d "$VENV_DIR" ]; then
     $PYTHON_BIN -m venv $VENV_DIR
-    
 fi
 
 # Activate  python virtul environment
@@ -149,3 +156,5 @@ systemctl enable telegraf --now
 
 echo "Post-install complete!"
 
+echo "Status of service '$APP_NAME' (python server): $(systemctl is-active $APP_NAME)"
+echo "Status of service 'telegraf' (scanner listener): $(systemctl is-active telegraf)"
