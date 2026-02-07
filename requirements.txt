@@ -3,3 +3,4 @@ sqlalchemy>=2.0
 pymssql
 python-dotenv
 watchdog
+flask
