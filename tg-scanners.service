@@ -17,7 +17,7 @@ WorkingDirectory=/var/opt/tg-scanners
 EnvironmentFile=/etc/tg-scanners/tg-scanners.env
 
 # Use the venv Python explicitly
-ExecStart=/var/opt/tg-scanners/venv/bin/python -m tg_scanners.main --mode mock
+ExecStart=/var/opt/tg-scanners/venv/bin/gunicorn -w 1 -b 0.0.0.0:5000 python-server:app
 
 # Environment (optional but recommended)
 Environment=PYTHONUNBUFFERED=1

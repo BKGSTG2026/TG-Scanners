@@ -15,9 +15,10 @@ from flask import Flask, request, jsonify
 from datetime import datetime
 
 # -----------------------------
-# Logging - TODO
+# Logging 
 # -----------------------------
 
+# Change the logging level to 'info' to see fewer logs, leaving as debug
 logging.basicConfig(level=logging.DEBUG)
 logger = logging.getLogger(__name__)
 

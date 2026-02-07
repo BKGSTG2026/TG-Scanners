@@ -25,8 +25,7 @@ EXCLUDES := \
 	--exclude='*.egg-info' \
 	--exclude='venv' \
 	--exclude='.venv' \
-	--exclude='dist' \
-	--exclude='rpmbuild'
+	--exclude='dist'
 
 # ----------------------------
 # Declare package dependencies

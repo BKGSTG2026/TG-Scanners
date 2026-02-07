@@ -1,4 +1,0 @@
-# This file should be located at /var/lib/telegraf with telegraf:telegraf permissions 
-# This enables disk-basked buffering
-[agent]
-  metric_buffer_limit = 100000

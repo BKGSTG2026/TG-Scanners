@@ -1,17 +1,108 @@
 #!/bin/bash
-set -euo pipefail
 
-NAME=tg-scanners
-SERVICE_USR=tg-scanner
-VENV_DIR=/var/opt/$NAME/venv
-ENV_FILE=/etc/$NAME/$NAME.env
-SERVICE_FILE_SRC=/var/opt/$NAME/$NAME.service
+# -----------------------------
+# GLobal Variables 
+# -----------------------------
+
+# Get OS information
+. /etc/os-release
+
+APP_NAME=tg-scanners 
+SERVICE_USER=tg-scanner
+
+# Defines the python virtual environment that this uses to run
+VENV_DIR=/var/opt/$APP_NAME/venv
+
+# File that systemd uses for environment values for the python server and telegraf
+PYTHON_SERVER_ENV_FILE=/etc/$APP_NAME/$APP_NAME.env
+TELEGRAF_ENV_FILE=/etc/telegraf/telegraf.conf
+
+# Where the .deb installer puts the python server's systemd unit file
+SERVICE_FILE_SRC=/var/opt/$APP_NAME/$APP_NAME.service
+
+# Where the .deb installer puts the env/configration files
+PYTHON_SERVER_ENV_FILE_SRC=/var/opt/$APP_NAME/.env
+TELEGRAF_ENV_FILE_SRC=/var/opt/$APP_NAME/telegraf.conf
 PYTHON_BIN=python3
 
-# Create system user if it doesn't exist
-if ! id -u $SERVICE_USR >/dev/null 2>&1; then
-    useradd --system --home /var/opt/$SERVICE_USR --shell /usr/sbin/nologin $SERVICE_USR
+# System architecture
+ARCH=$(dpkg --print-architecture)
+
+# Used to determine if this OS is running Debian 20.04 LTS or newer which impacts telegraf install
+LINUX_DISTRO=$ID
+LINUX_DISTRO_MAJOR_OS_VERSION=$VERSION_ID
+
+# -----------------------------
+# Install telegraf
+# -----------------------------
+case $LINUX_DISTRO in
+    "linuxmint")
+        if [ ! "$LINUX_DISTRO_MAJOR_OS_VERSION" -gt "12" ]; then
+            echo "Linux distro '$LINUX_DISTRO' with major OS version '$LINUX_DISTRO_MAJOR_OS_VERSION' is older than Debian 20.04 LTS - you must install telegrapf manually - exiting"
+            exit 1
+        fi
+        ;;
+    "debian")
+        if [ ! "$LINUX_DISTRO_MAJOR_OS_VERSION" -gt "20" ]; then
+            echo "Linux distro '$LINUX_DISTRO' with major OS version '$LINUX_DISTRO_MAJOR_OS_VERSION' is older than Debian 20.04 LTS - you must install telegrapf manually - exiting"
+            exit 1
+        fi
+        ;;
+    *)
+        echo "ERROR: Linux distro '$LINUX_DISTRO' not supported - exiting now."
+        exit 1
+    ;;
+esac
+
+curl --silent --location -O https://repos.influxdata.com/influxdata-archive.key
+
+gpg --show-keys --with-fingerprint --with-colons ./influxdata-archive.key 2>&1 \
+| grep -q '^fpr:\+24C975CBA61A024EE1B631787C3D57159FC2F927:$' \
+&& cat influxdata-archive.key \
+| gpg --dearmor \
+| sudo tee /etc/apt/keyrings/influxdata-archive.gpg > /dev/null \
+&& echo 'deb [signed-by=/etc/apt/keyrings/influxdata-archive.gpg] https://repos.influxdata.com/debian stable main' \
+| sudo tee /etc/apt/sources.list.d/influxdata.list
+
+sudo apt-get update && sudo apt-get install telegraf
+
+# -----------------------------
+# Directory & User creation
+# -----------------------------
+
+# Directories and their purposes:
+# /var/opt/tg-scanners:
+#   This is where the python server is deployed and runs out of (via the virtual environment)
+#
+# /etc/tg-scanners: This is were the .env file is installed and where the systemd service loads the env values for the python server
+#
+# /etc/telegraf: This contains the telegraf.conf file which contains the configuration details for telegraf
+
+
+# Create system user if they doesn't exist - this is who systemd uses to run the python server
+if ! id -u $SERVICE_USER >/dev/null 2>&1; then
+    useradd --system --home /var/opt/$SERVICE_USER --shell /usr/sbin/nologin $SERVICE_USER
 fi
+
+# Make the app's system user the owner of the files
+sudo chown -R $SERVICE_USER:$SERVICE_USER /var/opt/$APP_NAME
+
+# Create the direcotry for the python server's environment values
+sudo mkdir -p /etc/$APP_NAME
+
+# If the python service file doesn't exist at /etc..., then copy it there
+if [ ! -f "$PYTHON_SERVER_ENV_FILE" ]; then
+    sudo cp $PYTHON_SERVER_ENV_FILE_SRC $PYTHON_SERVER_ENV_FILE
+    sudo chown $SERVICE_USER:$SERVICE_USER $ENV_FILE
+fi
+
+# add in telegraf config
+cp $TELEGRAF_ENV_FILE_SRC $TELEGRAF_ENV_FILE
+
+#todo remove this
+# make storage directory if not exists
+# sudo mkdir -p /var/lib/scanner
+# sudo chown telegraf:telegraf /var/lib/scanner
 
 # Create venv
 if [ ! -d "$VENV_DIR" ]; then
@@ -19,58 +110,42 @@ if [ ! -d "$VENV_DIR" ]; then
     
 fi
 
-# Activate venv and install dependencies
+# Activate  python virtul environment
 . $VENV_DIR/bin/activate
+
+# Install python server dependencies in virtual environment, not at the system level
 pip install --upgrade pip setuptools wheel
-pip install  -r /var/opt/$NAME/requirements.txt
+pip install  -r /var/opt/$APP_NAME/requirements.txt
 pip install pyodbc
-deactivate
+deactivate #  python virtual environment setup complete - exit it
 
-# Detect architecture
-ARCH=$(dpkg --print-architecture)
-
-# Install ODBC drivers
-#if [ "$ARCH" = "amd64" ]; then
-#    # Install Microsoft ODBC driver for laptops / servers
-#    curl -fsSL https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor | sudo tee /usr/share/keyrings/microsoft-prod.gpg > /dev/null
-#    echo "deb [arch=amd64 signed-by=/usr/share/keyrings/microsoft-prod.gpg] https://packages.microsoft.com/ubuntu/22.04/prod jammy main" | sudo tee /etc/apt/sources.list.d/microsoft-prod.list
-#    sudo apt update
-#    sudo ACCEPT_EULA=Y apt install -y msodbcsql18 unixodbc-dev
-#else
-    # ARM / Raspberry Pi: install FreeTDS
-    #sudo apt update
-    #sudo apt install -y unixodbc unixodbc-dev freetds-bin freetds-dev tdsodbc
-#fi
+# -----------------------------
+# Configure DSN
+# -----------------------------
 
 # Configure DSN (testing)
-sudo mkdir -p /etc/odbcinst.ini.d
-cat <<EOF | sudo tee /etc/odbcinst.ini
-[$NAME]
-Description = ODBC driver for $NAME
-Driver = $(if [ "$ARCH" = "amd64" ]; then echo "/opt/microsoft/msodbcsql18/lib64/libmsodbcsql-18.1.so.1.1"; else echo "/usr/lib/arm-linux-gnueabihf/odbc/libtdsodbc.so"; fi)
-EOF
+# sudo mkdir -p /etc/odbcinst.ini.d
+# cat <<EOF | sudo tee /etc/odbcinst.ini
+# [$APP_NAME]
+# Description = ODBC driver for $APP_NAME
+# Driver = $(if [ "$ARCH" = "amd64" ]; then echo "/opt/microsoft/msodbcsql18/lib64/libmsodbcsql-18.1.so.1.1"; else echo "/usr/lib/arm-linux-gnueabihf/odbc/libtdsodbc.so"; fi)
+# EOF
 
-# Set permissions
-sudo chown -R $SERVICE_USR:$SERVICE_USR /var/opt/$NAME
-sudo mkdir -p /etc/$NAME
-if [ ! -f "$ENV_FILE" ]; then
-    sudo cp /var/opt/$NAME/.env /etc/$NAME/$NAME.env
-    sudo chown $SERVICE_USR:$SERVICE_USR $ENV_FILE
-fi
 
-# add in telegraf config
-cp /etc/telegraf/telegraf.conf /etc/telegraf/telegraf.conf.bk.$(date +"%Y%m%d%H%M%S")
-cp telegraf.conf /etc/telegraf/telegraf.conf
 
-# make storage directory if not exists
-sudo mkdir -p /var/lib/scanner
-sudo chown telegraf:telegraf /var/lib/scanner
 
-# Deploy systemd service files
+# -----------------------------
+# Deploy systemd unit files
+# -----------------------------
 cp $SERVICE_FILE_SRC /etc/systemd/system
 chmod 640 /etc/systemd/system
+
+# -----------------------------
+# Start Services
+# -----------------------------
 systemctl daemon-reload
-systemctl enable ${NAME}.service --now
+systemctl enable ${APP_NAME}.service --now
+systemctl enable telegraf --now
 
 echo "Post-install complete!"
 
