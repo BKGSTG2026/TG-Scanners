@@ -58,6 +58,14 @@ if [ ! -f "$ENV_FILE" ]; then
     sudo chown $SERVICE_USR:$SERVICE_USR $ENV_FILE
 fi
 
+# add in telegraf config
+cp /etc/telegraf/telegraf.conf /etc/telegraf/telegraf.conf.bk.$(date +"%Y%m%d%H%M%S")
+cp telegraf.conf /etc/telegraf/telegraf.conf
+
+# make storage directory if not exists
+sudo mkdir -p /var/lib/scanner
+sudo chown telegraf:telegraf /var/lib/scanner
+
 # Deploy systemd service files
 cp $SERVICE_FILE_SRC /etc/systemd/system
 chmod 640 /etc/systemd/system

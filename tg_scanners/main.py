@@ -20,7 +20,7 @@ def main():
     repository = MessageRepository()
 
     # Initialize either mock messages or TCP/IP messages
-    source = build_message_source(mode=args.mode)
+    source = build_message_source()
 
     # For each message (either mock or real) push them to the database
     for message in source.listen():

@@ -38,6 +38,7 @@ DEPS := \
 	-d unixodbc-dev \
 	-d freetds-bin \
 	-d freetds-dev \
+	-d telegraf \
 	-d tdsodbc 
 
 # ----------------------------
