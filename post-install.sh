@@ -39,13 +39,13 @@ LINUX_DISTRO_MAJOR_OS_VERSION=$VERSION_ID
 # -----------------------------
 case $LINUX_DISTRO in
     "linuxmint")
-        if [ ! "$LINUX_DISTRO_MAJOR_OS_VERSION" -gt "12" ]; then
+        if [ ! "$LINUX_DISTRO_MAJOR_OS_VERSION" -gt "20" ]; then
             echo "Linux distro '$LINUX_DISTRO' with major OS version '$LINUX_DISTRO_MAJOR_OS_VERSION' is older than Debian 20.04 LTS - you must install telegrapf manually - exiting"
             exit 1
         fi
         ;;
     "debian")
-        if [ ! "$LINUX_DISTRO_MAJOR_OS_VERSION" -gt "20" ]; then
+        if [ ! "$LINUX_DISTRO_MAJOR_OS_VERSION" -gt "12" ]; then
             echo "Linux distro '$LINUX_DISTRO' with major OS version '$LINUX_DISTRO_MAJOR_OS_VERSION' is older than Debian 20.04 LTS - you must install telegrapf manually - exiting"
             exit 1
         fi
