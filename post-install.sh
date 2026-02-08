@@ -13,7 +13,7 @@ VENV_DIR=/var/opt/$APP_NAME/venv
 # File that systemd uses for environment values for the python server and telegraf
 PYTHON_SERVER_ENV_FILE=/etc/$APP_NAME/$APP_NAME.env
 TELEGRAF_ENV_FILE=/etc/telegraf/telegraf.conf
-FREETDS_ENV_FILE=/etc/freetds/freedts.conf
+FREETDS_ENV_FILE=/etc/freetds/freetds.conf
 
 # Where the .deb installer puts the python server's systemd unit file
 SERVICE_FILE_SRC=/var/opt/$APP_NAME/$APP_NAME.service
@@ -28,14 +28,16 @@ PYTHON_BIN=python3
 ARCH=$(dpkg --print-architecture)
 
 # Check to see if telegraf is installed - if not, bail on installation and give the user instructions
-if ! dpkg -s telegraf >/dev/null ; then
-    echo "ERROR: telegraf not installed! \
-    You must run the following to install telegraf, and then re-try installing this package \
-    1. 'sudo dpkg --purge $APP_NAME
-    2. 'sudo sh /var/opt/$APP_NAME/install-telegraf.sh' "
+if dpkg -s telegraf >/dev/null ; then
+    echo -e "\n\n\n\nERROR: 'telegraf' package not installed! \n"
+    echo -e "You must run the following to install telegraf, and then re-try installing this package:\n"
+    echo -e "\t1. 'sudo dpkg --purge $APP_NAME'"
+    echo -e "\t2. 'sudo sh install-telegraf.sh'"
+    echo -e "\t3. 'sudo apt install ./dist/tg-scanners_1.0.0_arm64.deb' \n\n\n\n"
     exit 1
 fi
 
+exit 1
 # -----------------------------
 # Directory & User creation
 # -----------------------------
@@ -71,13 +73,9 @@ if grep -q "sqlserver" $FREETDS_ENV_FILE; then
     cat $FREETDS_ENV_FILE_SRC >> $FREETDS_ENV_FILE
 fi
 
-# add in telegraf config
+# add in telegraf & python server config
 cp $TELEGRAF_ENV_FILE_SRC $TELEGRAF_ENV_FILE
-
-#todo remove this
-# make storage directory if not exists
-# sudo mkdir -p /var/lib/scanner
-# sudo chown telegraf:telegraf /var/lib/scanner
+cp $PYTHON_SERVER_ENV_FILE_SRC $PYTHON_SERVER_ENV_FILE
 
 # Create venv
 if [ ! -d "$VENV_DIR" ]; then
@@ -92,21 +90,6 @@ pip install --upgrade pip setuptools wheel
 pip install  -r /var/opt/$APP_NAME/requirements.txt
 pip install pyodbc
 deactivate #  python virtual environment setup complete - exit it
-
-# -----------------------------
-# Configure DSN
-# -----------------------------
-
-# Configure DSN (testing)
-# sudo mkdir -p /etc/odbcinst.ini.d
-# cat <<EOF | sudo tee /etc/odbcinst.ini
-# [$APP_NAME]
-# Description = ODBC driver for $APP_NAME
-# Driver = $(if [ "$ARCH" = "amd64" ]; then echo "/opt/microsoft/msodbcsql18/lib64/libmsodbcsql-18.1.so.1.1"; else echo "/usr/lib/arm-linux-gnueabihf/odbc/libtdsodbc.so"; fi)
-# EOF
-
-
-
 
 # -----------------------------
 # Deploy systemd unit files
