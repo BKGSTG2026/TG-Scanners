@@ -4,9 +4,6 @@
 # GLobal Variables 
 # -----------------------------
 
-# Get OS information
-. /etc/os-release
-
 APP_NAME=tg-scanners 
 SERVICE_USER=tg-scanner
 
@@ -33,7 +30,7 @@ ARCH=$(dpkg --print-architecture)
 # Check to see if telegraf is installed - if not, bail on installation and give the user instructions
 if ! dpkg -s package_name >/dev/null ; then
     echo "ERROR: telegraf not installed! \
-    Run `sudo ./var/opt/install-telegraf.sh` to install it and then try this installation again"
+    Run 'sudo ./var/opt/$APP_NAME/install-telegraf.sh' to install it and then try this installation again"
     exit 1
 fi
 

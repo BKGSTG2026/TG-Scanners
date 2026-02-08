@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Get OS information
+. /etc/os-release
+
 # Used to determine if this OS is running Debian 20.04 LTS or newer which impacts telegraf install
 LINUX_DISTRO=$ID
 LINUX_DISTRO_MAJOR_OS_VERSION=$VERSION_ID
