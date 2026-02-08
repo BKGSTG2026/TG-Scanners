@@ -1,0 +1,147 @@
+[
+    {
+        "id": "740f1152feb23a49",
+        "type": "tab",
+        "label": "Flow 4",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "ed94a4198f8f6090",
+        "type": "MSSQL-CN",
+        "tdsVersion": "7_4",
+        "name": "Linux sql server",
+        "server": "192.168.1.63",
+        "port": "1433",
+        "encyption": false,
+        "trustServerCertificate": true,
+        "database": "test",
+        "useUTC": true,
+        "connectTimeout": "15000",
+        "requestTimeout": "15000",
+        "cancelTimeout": "5000",
+        "pool": "5",
+        "parseJSON": false,
+        "enableArithAbort": true,
+        "readOnlyIntent": false
+    },
+    {
+        "id": "manual_trigger",
+        "type": "inject",
+        "z": "740f1152feb23a49",
+        "name": "Simulate Scan",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "payload": "0230303030453238303131303503",
+        "payloadType": "str",
+        "x": 170,
+        "y": 160,
+        "wires": [
+            [
+                "universal_parser"
+            ]
+        ]
+    },
+    {
+        "id": "universal_parser",
+        "type": "function",
+        "z": "740f1152feb23a49",
+        "name": "Data Parser",
+        "func": "// Extract ID and add metadata\nlet raw = msg.payload.toString();\nmsg.payload = {\n    tag: raw.replace(/[^a-zA-Z0-9]/g, ''),\n    scanner: \"Test_Bench_1\",\n    timestamp: new Date().toISOString()\n};\nreturn msg;",
+        "outputs": 1,
+        "x": 370,
+        "y": 280,
+        "wires": [
+            [
+                "local_file",
+                "debug_out",
+                "4bd05b03a9cd5196"
+            ]
+        ]
+    },
+    {
+        "id": "local_file",
+        "type": "file",
+        "z": "740f1152feb23a49",
+        "name": "Log to CSV",
+        "filename": "/home/anita/src/TG-Scanners/scanner_test.csv",
+        "filenameType": "str",
+        "appendNewline": true,
+        "createDir": true,
+        "overwriteFile": "false",
+        "x": 610,
+        "y": 160,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "debug_out",
+        "type": "debug",
+        "z": "740f1152feb23a49",
+        "name": "Monitor Results",
+        "active": true,
+        "tosidebar": true,
+        "complete": "payload",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 600,
+        "y": 440,
+        "wires": []
+    },
+    {
+        "id": "4bd05b03a9cd5196",
+        "type": "MSSQL",
+        "z": "740f1152feb23a49",
+        "mssqlCN": "ed94a4198f8f6090",
+        "name": "",
+        "outField": "payload",
+        "returnType": 0,
+        "throwErrors": 1,
+        "query": "INSERT INTO Scans (TagID, ScannerName, Time) VALUES ('{{{payload.tag}}}', '{{{payload.scanner}}}', '{{{payload.timestamp}}}')",
+        "modeOpt": "",
+        "modeOptType": "query",
+        "queryOpt": "payload",
+        "queryOptType": "editor",
+        "paramsOpt": "queryParams",
+        "paramsOptType": "none",
+        "rows": "rows",
+        "rowsType": "msg",
+        "parseMustache": true,
+        "params": [],
+        "x": 620,
+        "y": 280,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "1005fd02b20794f4",
+        "type": "tcp in",
+        "z": "740f1152feb23a49",
+        "name": "uPASS Listener (Port 7000)",
+        "server": "server",
+        "host": "",
+        "port": "7000",
+        "datamode": "stream",
+        "datatype": "buffer",
+        "newline": "",
+        "topic": "Gate_1",
+        "trim": false,
+        "tls": "",
+        "x": 140,
+        "y": 440,
+        "wires": [
+            [
+                "universal_parser"
+            ]
+        ]
+    }
+]
