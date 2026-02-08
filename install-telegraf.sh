@@ -9,6 +9,8 @@ LINUX_DISTRO_MAJOR_OS_VERSION=$VERSION_ID
 
 # -----------------------------
 # Install telegraf
+#
+# All commands taken from official site here: https://docs.influxdata.com/telegraf/v1/install/
 # -----------------------------
 
 case $LINUX_DISTRO in

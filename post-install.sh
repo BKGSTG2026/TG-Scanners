@@ -28,9 +28,11 @@ PYTHON_BIN=python3
 ARCH=$(dpkg --print-architecture)
 
 # Check to see if telegraf is installed - if not, bail on installation and give the user instructions
-if ! dpkg -s package_name >/dev/null ; then
+if ! dpkg -s telegraf >/dev/null ; then
     echo "ERROR: telegraf not installed! \
-    Run 'sudo ./var/opt/$APP_NAME/install-telegraf.sh' to install it and then try this installation again"
+    You must run the following to install telegraf, and then re-try installing this package \
+    1. 'sudo dpkg --purge $APP_NAME
+    2. 'sudo sh /var/opt/$APP_NAME/install-telegraf.sh' "
     exit 1
 fi
 
