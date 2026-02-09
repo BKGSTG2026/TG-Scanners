@@ -1,5 +1,7 @@
 ## uPASS RFID to MSSQL Bridge
 
+**NOTE:** YOu can access the Node Red application on port 1880 of the Raspberry pi in the web browser. 
+
 This document provides the architectural overview and configuration steps for an industrial IoT solution using a Raspberry Pi to bridge Nedap uPASS Go scanners with a remote Microsoft SQL Server.
 **Prerequisites**:
    - Hardware: Raspberry Pi (Model 3B+, 4, or 5).
